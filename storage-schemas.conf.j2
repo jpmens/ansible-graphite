@@ -1,0 +1,24 @@
+# {{ ansible_managed }}
+#
+#
+# Schema definitions for Whisper files. Entries are scanned in order,
+# and first match wins. This file is scanned for changes every 60 seconds.
+#
+#  [name]
+#  pattern = regex
+#  retentions = timePerPoint:timeToStore, timePerPoint:timeToStore, ...
+
+# Carbon's internal metrics. This entry should match what is specified in
+# CARBON_METRIC_PREFIX and CARBON_METRIC_INTERVAL settings
+[carbon]
+pattern = ^carbon\.
+retentions = 60:90d
+
+# data is stored for 2 years with a precision of
+# 15 seconds for last 30 minutes
+# 60 seconds for last day
+# 5 minutes for last 2 years
+
+[default]
+pattern = .*
+retentions = 15s:30m,60s:24h,300s:730d

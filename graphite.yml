@@ -1,0 +1,41 @@
+---
+- hosts: sushi.mens.de
+  connection: paramiko
+  user: vagrant
+  sudo: True
+  vars:
+  - vpath: /opt/graphite
+  - username: vagrant
+  - tzname: "Europe/Berlin"
+  tasks:
+    - action: apt pkg=${item} state=installed
+      with_items:
+      - python-dev
+      - python-pip
+      - python-virtualenv
+      - python-cairo
+      - python-cairo-dev
+    - name: Graphite | Copy requirements file
+      action: copy src=graphite-req.txt dest=/tmp/graphite-req.txt
+    - name: Graphite | Install PIP modules
+      action: pip requirements=/tmp/graphite-req.txt virtualenv=${vpath}
+    - name: Utility | Install Python 'requests'
+      action: pip name=requests virtualenv=${vpath}
+    - name: Carbon | Install carbon.conf template
+      action: template src=carbon.conf.j2 dest=${vpath}/conf/carbon.conf
+    - name: Graphite | Install local_settings template
+      action: template src=local_settings.py.j2 dest=${vpath}/webapp/graphite/local_settings.py
+    - name: Carbon | Install storage-schemas template
+      action: template src=storage-schemas.conf.j2 dest=${vpath}/conf/storage-schemas.conf
+    - name: Graphite | Install graph Templates template
+      action: template src=graphTemplates.conf.j2 dest=${vpath}/conf/graphTemplates.conf
+    - name: Graphite | Install run-web.sh script
+      action: copy src=run-web.sh dest=${vpath}/run-web.sh mode=755
+    - name: PowerDNS | Install statistics poller
+      action: copy src=pdns2graphite.py dest=${vpath}/pdns2graphite.py mode=755
+    - name: Django | Install initial data
+      action: template src=initial_data.json.j2 dest=${vpath}/webapp/graphite/initial_data.json
+    - name: Django | Set up database
+      action: shell cd ${vpath}/webapp/graphite; ${vpath}/bin/python manage.py syncdb --noinput creates=${vpath}/storage/graphite.db
+    - name: System | Set ownership of all files to $username
+      action: command chown -R ${username} ${vpath}
