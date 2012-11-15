@@ -582,7 +582,7 @@
          "last_name" : "",
          "username" : "{{ username }}",
          "email" : "somebody@example.com",
-         "password" : "sha1$d64b9$20643adb6f965f34671483e55a73b9dc65d3997f",
+         "password" : "{{ django_pw.hashed_pw }}",
          "is_active" : true,
          "is_superuser" : true,
          "groups" : [],

@@ -7,8 +7,13 @@
   - vpath: /opt/graphite
   - username: vagrant
   - tzname: "Europe/Berlin"
+  - pwfile: .pw
   tasks:
-    - action: apt pkg=${item} state=installed
+    - name: Graphite | Obtain sha1 password
+      local_action: django-hash src=${pwfile} algorithm=sha1
+      register: django_pw
+    - name: Graphite | Installl Python packages
+      action: apt pkg=${item} state=installed
       with_items:
       - python-dev
       - python-pip
@@ -16,25 +21,25 @@
       - python-cairo
       - python-cairo-dev
     - name: Graphite | Copy requirements file
-      action: copy src=graphite-req.txt dest=/tmp/graphite-req.txt
+      action: copy src=files/graphite-req.txt dest=/tmp/graphite-req.txt
     - name: Graphite | Install PIP modules
       action: pip requirements=/tmp/graphite-req.txt virtualenv=${vpath}
     - name: Utility | Install Python 'requests'
       action: pip name=requests virtualenv=${vpath}
     - name: Carbon | Install carbon.conf template
-      action: template src=carbon.conf.j2 dest=${vpath}/conf/carbon.conf
+      action: template src=files/carbon.conf.j2 dest=${vpath}/conf/carbon.conf
     - name: Graphite | Install local_settings template
-      action: template src=local_settings.py.j2 dest=${vpath}/webapp/graphite/local_settings.py
+      action: template src=files/local_settings.py.j2 dest=${vpath}/webapp/graphite/local_settings.py
     - name: Carbon | Install storage-schemas template
-      action: template src=storage-schemas.conf.j2 dest=${vpath}/conf/storage-schemas.conf
+      action: template src=files/storage-schemas.conf.j2 dest=${vpath}/conf/storage-schemas.conf
     - name: Graphite | Install graph Templates template
-      action: template src=graphTemplates.conf.j2 dest=${vpath}/conf/graphTemplates.conf
+      action: template src=files/graphTemplates.conf.j2 dest=${vpath}/conf/graphTemplates.conf
     - name: Graphite | Install run-web.sh script
-      action: copy src=run-web.sh dest=${vpath}/run-web.sh mode=755
+      action: copy src=files/run-web.sh dest=${vpath}/run-web.sh mode=755
     - name: PowerDNS | Install statistics poller
       action: copy src=pdns2graphite.py dest=${vpath}/pdns2graphite.py mode=755
     - name: Django | Install initial data
-      action: template src=initial_data.json.j2 dest=${vpath}/webapp/graphite/initial_data.json
+      action: template src=files/initial_data.json.j2 dest=${vpath}/webapp/graphite/initial_data.json
     - name: Django | Set up database
       action: shell cd ${vpath}/webapp/graphite; ${vpath}/bin/python manage.py syncdb --noinput creates=${vpath}/storage/graphite.db
     - name: System | Set ownership of all files to $username
