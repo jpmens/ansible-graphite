@@ -11,6 +11,7 @@
   tasks:
     - name: Graphite | Obtain sha1 password
       local_action: django-hash src=${pwfile} algorithm=sha1
+      sudo: False
       register: django_pw
     - name: Graphite | Installl Python packages
       action: apt pkg=${item} state=installed
