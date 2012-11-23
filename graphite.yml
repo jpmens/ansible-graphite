@@ -43,5 +43,7 @@
       action: template src=files/initial_data.json.j2 dest=${vpath}/webapp/graphite/initial_data.json
     - name: Django | Set up database
       action: shell cd ${vpath}/webapp/graphite; ${vpath}/bin/python manage.py syncdb --noinput creates=${vpath}/storage/graphite.db
+    - name: System | Include system-site-packages in virtualenv
+      action: shell virtualenv --system-site-packages ${vpath}
     - name: System | Set ownership of all files to $username
       action: command chown -R ${username} ${vpath}
